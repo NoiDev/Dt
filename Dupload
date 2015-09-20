@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# If the default configutation file is used, the uploaded file is passed in $1
+# If a non-default configuration is used, the upload file is passed in $2
+
+#echo 'Resolving upload file and configuation file...'
+
+if [ -n "$1" ] && [ -n "$2" ]
+then
+    CONFIG_FILE_PATH=$1
+    UPLOAD_FILE_PATH=$2
+elif [ -n "$1" ]
+then
+    UPLOAD_FILE_PATH=$1
+else
+    echo 'Must pass a file to upload'
+    echo 'Exiting...'
+    exit 1;
+fi
+
+
+# Get the path to the source file directory.
+SOURCE_DIR="$(dirname "$(readlink "$0")")"
+
+# Load the configuation file.
+. "$SOURCE_DIR/Dget_config.sh"
+
+
+if [ -z "$D_SSH_HOST_URL" ] || [ -z "$D_SSH_HOST_NAME" ] || [ -z "$D_REMOTE_PATH_TO_PROJECT_ROOT" ]
+then
+    echo "Invalid Configuration File: $CONFIG_FILE_PATH"
+    echo 'Exiting...'
+    exit 1;
+fi
+
+
+RELATIVE_PATH=$(dirname "$UPLOAD_FILE_PATH")
+
+REMOTE_PATH="$D_SSH_HOST_URL:$D_REMOTE_PATH_TO_PROJECT_ROOT/$RELATIVE_PATH"
+
+
+echo "Sending $UPLOAD_FILE_PATH to $D_SSH_HOST_NAME"
+
+echo "scp $UPLOAD_FILE_PATH $REMOTE_PATH"
+
+scp "$UPLOAD_FILE_PATH" "$REMOTE_PATH"
+
+exit 0;

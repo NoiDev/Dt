@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# If a non-default configuration is used, the path to it must be passed in $1
+
+#echo 'Resolving upload file and configuation file...'
+
+if [ -n "$1" ] && [ -n "$2" ]
+then
+    CONFIG_FILE_PATH=$1
+    OPTION=$2
+elif [ -n "$1" ]
+then
+    OPTION=$1
+else
+    echo 'No staged status option passed, using default: -m (--modified)'
+    OPTION='-m'
+fi
+
+
+# Get the path to the source file directory.
+SOURCE_DIR="$(dirname "$(readlink "$0")")"
+
+# Load the configuation file.
+. "$SOURCE_DIR/Dget_config.sh"
+
+
+if [ -z "$D_SSH_HOST_URL" ] || [ -z "$D_SSH_HOST_NAME" ] || [ -z "$D_REMOTE_PATH_TO_PROJECT_ROOT" ]
+then
+    echo "Invalid Configuration File: $CONFIG_FILE_PATH"
+    echo 'Exiting...'
+    exit 1;
+fi
+
+if [ "$OPTION" = '--modified' ] || [ "$OPTION" = '-m' ] 
+then
+    echo "Sending all files flagged by git as 'modified' to $D_SSH_HOST_NAME"
+    git status | grep "^[[:space:]]modified:" | sed 's/[[:space:]]*modified:[[:space:]]*//' | while read path
+        do Dupload "$path"
+    done
+elif [ "$OPTION" = '--help' ] || [ "$OPTION" = '-h' ] 
+then
+    echo 'Supported options (file statuses from git):'
+    echo ' -m (--modified) - Upload files tracked by git and listed as modified.'
+    echo ' -h (--help)     - Show this list.'
+    exit 0
+else
+    echo "Unsupported Dsync option: $OPTION"
+    echo 'For a list of supported options, pass -h (--help)'
+    exit 1;
+fi
+
+exit 0

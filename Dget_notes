@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# Allow user to specify a directory, if none is specified, use the current working directory.
+DIRECTORY_PATH=$1
+if [ -z "$DIRECTORY_PATH" ]
+    then
+        DIRECTORY_PATH=$PWD
+fi
+
+echo 'Searching for @tag(Name) comments...';
+
+# Grep to get a list of intances of tagged comments.
+
+RAW_LIST=$(grep -nr @[[:alpha:]]*\([[:alpha:]]*\): $DIRECTORY_PATH)
+
+
+CURRENT_FILE=''
+
+FILE_COUNT=0
+LINE_COUNT=0
+
+while read -r LINE 
+do
+    #Split line into file name, line number, and the comment proper.
+    IFS=":" read -r FILE_NAME LINE_NUMBER COMMENT <<< "$LINE"
+   
+    #Clean any pre-tag text.
+    #Remove any trailing html comment tags.
+
+    # @note(Noah): An email address before the tag will fool the first substitution.
+
+    COMMENT=$(echo $COMMENT | sed 's/[^@]*@/@/' | sed 's/[-,~]\{2\}>//g')
+
+    if [ -n "$COMMENT" ]
+    then
+        #Print the file name only when we start a new file.
+        if [ "$CURRENT_FILE" != "$FILE_NAME" ]
+        then
+            CURRENT_FILE=$FILE_NAME
+            echo '';
+            echo '';
+            echo "$CURRENT_FILE:";
+            echo '';
+
+            ((FILE_COUNT++))
+        fi
+
+        echo "Line $LINE_NUMBER: $COMMENT";
+        
+        ((LINE_COUNT++))
+    fi
+
+done <<< "$RAW_LIST"
+
+
+if [ "$LINE_COUNT" == 1 ]
+then
+    LINE_MESSAGE='1 tagged comment in'
+else
+    LINE_MESSAGE="$LINE_COUNT tagged comments in"
+fi
+
+if [ "$FILE_COUNT" == 1 ]
+then
+    FILE_MESSAGE='1 file.'
+else
+    FILE_MESSAGE="$FILE_COUNT files."
+fi
+
+echo ''
+echo "$LINE_MESSAGE" "$FILE_MESSAGE"
+echo ''
+
+
+exit 0

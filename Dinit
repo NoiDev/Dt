@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# Get passed directory or working directory.
+
+if [ -z "$1" ]
+then
+    CONFIG_FILE_PATH="$PWD/Dconfig.sh"
+elif [ -d "$1" ]
+then
+    CONFIG_FILE_PATH="$1/Dconfig.sh"
+elif [ -f "$1" ]
+then 
+    echo "Invalid: specified path must be a directory: $1"
+    echo 'Exiting...'
+    exit 1;
+else
+
+    # @todo(Noah): Debug mkdir.
+
+    RESULT=$(mkdir -p "$1")
+
+    if [ "$_" == 0 ]
+    then
+        CONFIG_FILE_PATH="$1/Dconfig.sh"
+    else
+        echo "Could not create project directory: $1"
+        echo 'Exiting...'
+        exit 1;
+    fi
+
+    #echo "Invalid project directory: $1"
+    #echo 'Exiting...'
+    #exit 1;
+fi
+
+
+# Test for Dconfig.sh, error if already exists. 
+
+if [ -f "$CONFIG_FILE_PATH" ]
+then 
+    echo "Dconfig.sh already esists at the is path: $CONFIG_FILE_PATH"
+    echo 'Exiting...'
+    exit 1;
+fi
+
+
+echo "Setting up project at path: $CONFIG_FILE_PATH"
+echo 'Creating Dconfig.sh...'
+
+cat <<EOT >> "$CONFIG_FILE_PATH" 
+# Please enter in your server details:
+
+D_SSH_HOST_NAME='Det Test Server'
+D_SSH_HOST_URL='user@host.com'
+D_REMOTE_PATH_TO_PROJECT_ROOT='~/www'
+EOT
+
+
+echo 'Sample Dconfig.sh created.'
+echo 'Please enter your server details:'
+
+echo "vi $CONFIG_FILE_PATH"
+
+vi "$CONFIG_FILE_PATH"
+
+exit 0
+

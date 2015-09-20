@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Get the directory where the source files reside, 
+# This allows us to execute commands that might not be installed globally.
+
+SOURCE_DIR="$(dirname "$(readlink "$0")")"
+
+# Get sub-command
+
+if [ -z "$1" ]
+then
+    echo 'Must pass a sub-command'
+    echo 'Exiting...'
+    exit 1;
+fi
+
+# Use D[sub-command] naming convention to infer the requested command (Dt ssh ==> Dssh).
+# Pass along all arguments.
+
+SUB_COMMAND="D$1"
+COMMAND_PATH="$SOURCE_DIR/$SUB_COMMAND"
+
+sh "$COMMAND_PATH" "$2" "$3"

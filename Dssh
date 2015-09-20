@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Get the path to the source file directory.
+SOURCE_DIR="$(dirname "$(readlink "$0")")"
+
+# Load the configuration file.
+CONFIG_FILE_PATH=$1
+. "$SOURCE_DIR/Dget_config.sh"
+
+# Confirm the existance of the desired properties.
+if [ -z "$D_SSH_HOST_URL" ] || [ -z "$D_SSH_HOST_NAME" ]
+then
+    echo "Invalid Configuration File: $CONFIG_FILE_PATH"
+    echo 'Exiting...'
+    exit 1;
+fi
+
+
+echo "ssh $D_SSH_HOST_URL"
+
+echo "Logging into $D_SSH_HOST_NAME..."
+
+ssh $D_SSH_HOST_URL
+
+exit 0;
